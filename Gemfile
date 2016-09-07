@@ -1,7 +1,10 @@
 source "https://rubygems.org"
 
+gem "aws-sdk"
+gem "chartkick"
 gem "pg"
 gem "pghero"
+gem "pg_query"
 gem "puma", "~> 2.9.1"
-gem "rails", "~> 4.1.6"
+gem "rails", "~> 4.2.7.1"
 gem "rails_12factor", "~> 0.0.3"
