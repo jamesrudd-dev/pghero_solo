@@ -7,7 +7,7 @@ RUN apt-get update -y && apt-get -y --no-install-recommends install \
     build-essential      
 
 # Add and install gem dependencies
-COPY Gemfile /app/Gemfile
+COPY Gemfile Gemfile.lock /app/
 RUN bash -l -c "cd /app && bundle install -j4"
 
 FROM ruby:slim-buster as app
