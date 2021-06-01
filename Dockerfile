@@ -1,26 +1,34 @@
-FROM yammer/ruby:2.1.3
-MAINTAINER Brian Morton "bmorton@yammer-inc.com"
+FROM ruby:slim-buster as builder
 
 # Install dependencies for gems
-RUN apt-get update
-# pg gem
-RUN apt-get -y install libpq-dev
-
-# Install PostgreSQL client
-RUN locale-gen en_US.UTF-8
-RUN curl https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
-RUN echo "deb http://apt.postgresql.org/pub/repos/apt/ precise-pgdg main" >> /etc/apt/sources.list
-RUN apt-get -y update && apt-get -y install postgresql-client
+RUN apt-get update -y && apt-get -y --no-install-recommends install \
+    libpq-dev \
+    ruby-dev \
+    build-essential      
 
 # Add and install gem dependencies
-ADD Gemfile       /app/Gemfile
-ADD Gemfile.lock  /app/Gemfile.lock
+COPY Gemfile /app/Gemfile
 RUN bash -l -c "cd /app && bundle install -j4"
 
-ADD . /app
+FROM ruby:slim-buster as app
 
+# Install dependencies for gems and remove vuln : [liblz4-1] current vulnerability in Debian 10.9
+RUN apt-get update -y && apt-get -y --no-install-recommends install \
+    libpq-dev \
+    liblz4-1 \                      
+    && rm -rf /var/lib/apt/lists/*   
+
+LABEL maintainer="James Rudd"
+
+COPY --from=builder /usr/local/bundle/ /usr/local/bundle/
+COPY --from=builder /app /app
+COPY . /app
+
+RUN chown 1000:1000 /app
 WORKDIR /app
-EXPOSE 8080
+USER 1000
 
-ENTRYPOINT ["chruby-exec", "ruby", "--"]
-CMD ["bundle exec puma -t ${PUMA_MIN_THREADS:-8}:${PUMA_MAX_THREADS:-12} -w ${PUMA_WORKERS:-1} -p 8080 -e ${RACK_ENV:-production} --preload"]
+EXPOSE 8080
+ENV RAILS_LOG_TO_STDOUT=false
+
+CMD bundle exec puma -t ${PUMA_MIN_THREADS:-8}:${PUMA_MAX_THREADS:-12} -w ${PUMA_WORKERS:-1} -p 8080 -e ${RACK_ENV:-production} --preload
