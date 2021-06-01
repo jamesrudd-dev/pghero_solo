@@ -1,11 +1,10 @@
 # PgHero Solo
 
-This repository is a containerized, standalone instance of the excellent [PgHero engine](https://github.com/ankane/pghero).  It allows you to pass a `DATABASE_URL` environment variable to run PgHero within Docker against your database without having to mount this inside your Rails application.  It allows all the benefits of PgHero while allowing you to run a separate application instance safely behind your firewall without fear of accidently exposing it through your production Rails app.
+** forked from ankane/pghero_solo which is forked from bmorton/pghero_solo **
 
-This strategy is used at [Yammer](https://www.yammer.com) to run PgHero against each of our different shards.
+This repository is a containerized, standalone instance of the excellent [PgHero engine](https://github.com/ankane/pghero).  It allows you to pass a `DATABASE_URL` environment variable to run PgHero within Docker against your database. `SECRET_KEY_BASE` environment variable must be passed for production environment currently set in the Dockerfile. The Dockerfile must be altered to run in "development" if this environment variable is not desired. 
 
-This repository has an [automated build](https://registry.hub.docker.com/u/bmorton/pghero/) on the public Docker hub.  To demo this and run it on OS X with boot2docker installed, you can connect to a Homebrew-installed Postgres instance like this:
-
+Usage:
 ```
-docker run -ti -e DATABASE_URL=postgres://user@10.0.2.2:5432/myapp_development -p 8080:8080 bmorton/pghero
+docker run -d -it -e DATABASE_URL=postgres://user:pass@host:5432/db -e SECRET_KEY_BASE=secrettokenhere -p 8080:8080 jamesrudd-dev/pghero:tag
 ```
